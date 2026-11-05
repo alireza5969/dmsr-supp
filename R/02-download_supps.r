@@ -49,6 +49,16 @@
 }
 
 
+.fetch_zip <- function(url, zip_path, http11 = FALSE) {
+  req <- httr2::request(url) |>
+    httr2::req_timeout(600) |>
+    httr2::req_error(is_error = \(r) FALSE) |>
+    httr2::req_retry(max_tries = 3, retry_on_failure = TRUE)
+  if (http11) req <- httr2::req_options(req, http_version = 2L)   # 2 = CURL_HTTP_VERSION_1_1
+  httr2::req_perform(req, path = zip_path)
+}
+
+
 # GitHub rejects any single file over 100 MB, and one rejected file blocks every later
 # push. Files above `max_file_mb` are therefore dropped and listed in `log_file`.
 .drop_oversize <- function(outdir, pmcid, max_file_mb, log_file = "download_skipped.txt") {
@@ -87,15 +97,20 @@ download_supp <- function(n, pmcid, expected_files, out_root = "data", sleep = 0
   zip_path <- tempfile(fileext = ".zip")
   on.exit(unlink(zip_path), add = TRUE)
   
+  # First attempt: normal (HTTP/2). If it errors, try once more over HTTP/1.1: the
+  # "HTTP/2 stream ... INTERNAL_ERROR" failures from www.ebi.ac.uk can be persistent
+  # for particular articles.
   resp <- tryCatch(
-    httr2::request(url) |>
-      httr2::req_timeout(600) |>
-      httr2::req_error(is_error = \(r) FALSE) |>
-      httr2::req_retry(max_tries = 3, retry_on_failure = TRUE) |>
-      httr2::req_perform(path = zip_path),
+    .fetch_zip(url, zip_path),
     error = function(e) {
-      message("Download failed for ", pmcid, ": ", conditionMessage(e))
-      NULL
+      message("Download failed for ", pmcid, "; retrying over HTTP/1.1")
+      tryCatch(
+        .fetch_zip(url, zip_path, http11 = TRUE),
+        error = function(e2) {
+          message("Download failed for ", pmcid, ": ", conditionMessage(e2))
+          NULL
+        }
+      )
     }
   )
   
