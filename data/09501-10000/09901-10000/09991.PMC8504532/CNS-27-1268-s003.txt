@@ -1,0 +1,137 @@
+---
+title: "Meta Analyses "
+author: "Elham Barati, Amir Valizadeh"
+---
+setwd("/Users/amirvalizadeh/Desktop")
+
+#Import packages
+library(meta)
+library(dplyr)
+library(dmetar)
+
+#Load data
+Data <- readxl::read_excel("Data.xlsx")
+Data <- Data[order(Data$`Study ID`) , ]
+GeneralData <- Data[order(Data$`Study ID`) , c("n" , "r")]
+
+#Main synthesis
+MainSynthesis <- metacor(GeneralData$r, GeneralData$n, studlab = Data$`Study ID`, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(MainSynthesis)
+
+#Create forest plot
+png(file = "./Main Synthesis.png", width = 2800, height = 2100, res = 300)
+forest.meta(MainSynthesis, xlim =  c(-1 , 1), test.overall = TRUE, calcwidth.tests = TRUE, leftlabs = c("Study ID" , "Sample Size"), test.overall.random = TRUE, prediction = TRUE, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+
+#SMF subgroup analysis#
+DataSMF <- subset(Data, !is.na(SMF))
+GeneralDataSMF <- DataSMF[order(DataSMF$`Study ID`), c("n" , "r", "SMF")]
+DataSMF <- DataSMF[order(DataSMF$`Study ID`), ]
+
+SubGroupSMF <- metacor(GeneralDataSMF$r, GeneralDataSMF$n, studlab = DataSMF$`Study ID`, byvar = DataSMF$SMF, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(SubGroupSMF)
+
+png(file = "./SMF Subgroup.png", width = 3200, height = 2500, res = 300)
+forest.meta(SubGroupSMF, xlim =  c(-1 , 1), leftlabs = c("Study ID" , "Sample Size"), print.byvar=FALSE, overall.hetstat=FALSE, test.subgroup.random = TRUE, calcwidth.tests = TRUE, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+
+#Criteria subgroup analysis#
+DataCriteria <- subset(Data, !is.na(Criteria))
+GeneralDataCriteria <- DataCriteria[order(DataCriteria$`Study ID`), c("n" , "r", "Criteria")]
+DataCriteria <- DataCriteria[order(DataCriteria$`Study ID`), ]
+
+SubGroupCriteria <- metacor(GeneralDataCriteria$r, GeneralDataCriteria$n, studlab = DataCriteria$`Study ID`, byvar = DataCriteria$Criteria, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(SubGroupCriteria)
+
+png(file = "./Criteria Subgroup.png", width = 3200, height = 2100, res = 300)
+forest.meta(SubGroupCriteria, xlim =  c(-1 , 1), leftlabs = c("Study ID" , "Sample Size"), print.byvar=FALSE, overall.hetstat=FALSE, test.subgroup.random = TRUE, calcwidth.tests = TRUE, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+
+#Sensitivity analyses#
+Rob1 <- Data %>% filter(`ROB 1` %in% c('High' , "Unclear")) %>% select(`Study ID` ,n , r)
+Rob1 <- Rob1[order(Rob1$`Study ID`) , ]
+meta_Rob1 <-  metacor(Rob1$r , Rob1$n, studlab = Rob1$`Study ID`, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(meta_Rob1)
+png(file = "./Rob1.png", width = 3200, height = 1000, res = 300)
+forest.meta(meta_Rob1, xlim =  c(-1 , 1), leftlabs = c("Study ID" , "Sample Size"), calcwidth.tests = TRUE, test.overall = TRUE, comb.fixed = F, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+Rob4 <- Data %>% filter(`ROB 4` %in% c('High' , "Unclear")) %>% select(`Study ID` ,n , r)
+Rob4 <- Rob4[order(Rob4$`Study ID`) , ]
+meta_Rob4 <-  metacor(Rob4$r , Rob4$n, studlab = Rob4$`Study ID`, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(meta_Rob4)
+png(file = "./Rob4.png", width = 3200, height = 1000, res = 300)
+forest.meta(meta_Rob4, xlim =  c(-1 , 1), leftlabs = c("Study ID" , "Sample Size"), calcwidth.tests = TRUE, test.overall = TRUE, comb.fixed = F, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+Rob5 <- Data %>% filter(`ROB 5` %in% c('High' , "Unclear")) %>% select(`Study ID` ,n , r)
+Rob5 <- Rob5[order(Rob5$`Study ID`) , ]
+meta_Rob5 <-  metacor(Rob5$r , Rob5$n, studlab = Rob5$`Study ID`, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(meta_Rob5)
+png(file = "./Rob5.png", width = 3200, height = 1900, res = 300)
+forest.meta(meta_Rob5, xlim =  c(-1 , 1), leftlabs = c("Study ID" , "Sample Size"), calcwidth.tests = TRUE, test.overall = TRUE, comb.fixed = F, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+Large <- Data %>% filter(`Large` %in% c("Yes")) %>% select(`Study ID` ,n , r)
+Large <- Large[order(Large$`Study ID`) , ]
+meta_Large <-  metacor(Large$r , Large$n, studlab = Large$`Study ID`, comb.fixed = FALSE, text.w.random="Weight", method.tau = 'HS')
+print(meta_Large)
+png(file = "./Large.png", width = 3200, height = 800, res = 300)
+forest.meta(meta_Large, xlim =  c(-1 , 1), leftlabs = c("Study ID" , "Sample Size"), calcwidth.tests = TRUE, test.overall = TRUE, comb.fixed = F, col.square = "red", col.diamond = "black")
+while (!is.null(dev.list()))
+dev.off()
+
+
+#Bias Graphs
+BiasCharts <- Data %>% 
+  select( `Study ID` , 
+          "1.Study participation" = `ROB 1` ,
+          "2.Study attrition" = `ROB 2`, 
+          "3.Prognostic factor measurement" = `ROB 3`, 
+          "4.Outcome measurement" = `ROB 4` ,
+          "5.Study confounding" = `ROB 5` ,
+          "6.Statistical analysis and reporting" = `ROB 6`)
+
+Bias_df<- as.data.frame(BiasCharts)
+
+png(filename = "./bias.png", width = 1000, height = 250)
+rob.summary(Bias_df)
+dev.off()
+
+png(filename = "./biasTable.png", width = 800 , height = 1000)
+rob.summary(Bias_df ,  studies = Bias_df$`Study ID` , table = T)
+dev.off()
+
+png(filename = "./biasTable2.png", width = 900 , height = 1500)
+rob.summary(Bias_df, studies = Bias_df$`Study ID` , table = T)
+dev.off()
+
+
+#Funnel plot
+funnel(MainSynthesis,
+       comb.random = TRUE ,
+       comb.fixed = FALSE, 
+       level = 0.95,
+       #contour = c(0.9, 0.95, 0.99)
+       )
+png(filename = "./funnel.png" , width = 800 , height = 600)
+funnelplot <- funnel(MainSynthesis, 
+             comb.fixed = FALSE,
+             comb.random = TRUE, 
+             level = 0.95, 
+             contour = c(0.9, 0.95, 0.99),
+             #col.contour = c("darkgreen", "green", "lightgreen"),
+             xlim = c(-.5 , 1.1) ,
+              ref = 0.328
+             )$col.contour
+legend(.8, 0.01, c("0.1 > p > 0.05", "0.05 > p > 0.01", "< 0.01"), fill = funnelplot, cex = 0.75)
+dev.off()
