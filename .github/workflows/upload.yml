@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 355
     env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       TG_TOKEN:   ${{ secrets.TG_TOKEN }}
       CHAT_ID:    ${{ secrets.CHAT_ID }}
       TIME_BUDGET_MIN: "315"
@@ -44,18 +43,24 @@ jobs:
             any::fs
             any::httr2
             any::curl
-            any::gert
 
       - name: Run R/05-main_upload_telegram.r
         timeout-minutes: 330
         run: Rscript R/05-main_upload_telegram.r
 
+      # Runs even if the script crashed or hit the timeout. It ALWAYS pushes: the R script may
+      # have committed locally while its own pushes failed.
       - name: Commit and push upload cache
         if: always()
         run: |
           git add -A
           if ! git diff --cached --quiet; then
             git commit -m "upload: save cache"
-            git pull --rebase
-            git push
           fi
+          git pull --rebase
+          for attempt in 1 2 3; do
+            git push && exit 0
+            echo "push failed (attempt $attempt)"; sleep 20
+            git pull --rebase
+          done
+          exit 1
