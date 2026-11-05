@@ -16,14 +16,6 @@
   body <- trimws(body)
   if (!nzchar(body)) return(empty)
   
-  # OBSERVED: for an article without supplementary files the API answers HTTP 200
-  # with the plain-text body "[Error] : No result can be found" (not JSON, not a 404).
-  # That is a successful "nothing there", not a failure. Any other "[Error]" is a failure.
-  if (grepl("^\\[Error\\]", body)) {
-    if (grepl("No result can be found", body, fixed = TRUE)) return(empty)
-    stop("API error: ", substr(body, 1, 200))
-  }
-  
   recs <- jsonlite::parse_json(body)
   if (length(recs) == 0) return(empty)
   if (!is.null(names(recs))) recs <- list(recs)   # a single record, not a list of them
@@ -62,8 +54,8 @@ get_supp_adds <- function(pmcid, timeout = 10, max_tries = 3) {
   
   status <- httr2::resp_status(resp)
   
-  # A 404 is also treated as "no supplementary files". (In practice the API answers
-  # 200 + "[Error] : No result can be found" for that case; see .parse_adds().)
+  # ASSUMPTION: 404 means "no supplementary files for this article".
+  # Check this against a PMCID you know has none.
   if (status == 404L) {
     return(tibble::tibble(pmcid = character(), num = integer(), original_file = character()))
   }

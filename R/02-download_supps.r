@@ -49,7 +49,27 @@
 }
 
 
-download_supp <- function(n, pmcid, expected_files, out_root = "data", sleep = 0.34) {
+# GitHub rejects any single file over 100 MB, and one rejected file blocks every later
+# push. Files above `max_file_mb` are therefore dropped and listed in `log_file`.
+.drop_oversize <- function(outdir, pmcid, max_file_mb, log_file = "download_skipped.txt") {
+  f <- list.files(outdir, recursive = TRUE, full.names = TRUE, all.files = TRUE)
+  if (!length(f)) return(invisible())
+  mb  <- file.size(f) / 1024^2
+  big <- !is.na(mb) & mb > max_file_mb
+  if (!any(big)) return(invisible())
+  
+  cat(sprintf("%s\t%s\t%.1f MB\n", pmcid, basename(f[big]), mb[big]),
+      file = log_file, append = TRUE, sep = "")
+  file.remove(f[big])
+  invisible()
+}
+
+
+# cleanup = TRUE deletes files whose names are not in `expected_files`. It is OFF by default:
+# deleting is irreversible, and the names in the BioC list do not always match the names
+# inside the Europe PMC zip.
+download_supp <- function(n, pmcid, expected_files, out_root = "data", sleep = 0.34,
+                          cleanup = FALSE, max_file_mb = 95) {
   
   n <- as.character(n)
   outdir <- file.path(
@@ -102,7 +122,8 @@ download_supp <- function(n, pmcid, expected_files, out_root = "data", sleep = 0
     return(-1L)
   }
   
-  .cleanup_unexpected(outdir, expected_files)
+  .drop_oversize(outdir, pmcid, max_file_mb)
+  if (cleanup) .cleanup_unexpected(outdir, expected_files)
   
   200L
 }

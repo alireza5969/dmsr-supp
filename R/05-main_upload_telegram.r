@@ -1,7 +1,7 @@
 # Entry point: upload downloaded supplement files to Telegram.
 # Run from the project root:   Rscript R/05-main_upload_telegram.r
 # Env vars: TG_TOKEN, CHAT_ID (required); TIME_BUDGET_MIN, NO_GIT=1 (optional).
-# Requires: readr, dplyr, tibble, fs, httr2, curl, gert.
+# Requires: readr, dplyr, tibble, fs, httr2, curl (and the git command line).
 
 source("R/00-utils.r")
 source("R/03-upload_telegram.r")
