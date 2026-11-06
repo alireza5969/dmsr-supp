@@ -3,3 +3,4 @@ data/00001-00500/00001-00100/00062.PMC10071497/supplementary_appendix_3_pzac099.
 ℹ Bad Request: file must be non-empty",2026-11-06 07:24:08
 data/00001-00500/00301-00400/00328.PMC10397541/ir-2022-00094f6.jpg,failed,"HTTP 400 Bad Request.
 ℹ Bad Request: file must be non-empty",2026-11-06 07:24:11
+data/02001-02500/02001-02100/02009.PMC7889465/mmc1.docx,skipped,data/02001-02500/02001-02100/02009.PMC7889465/mmc1.docx is 64.2 MB; Bot API limit is 50 MB,2026-11-06 10:46:13
