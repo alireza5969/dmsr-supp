@@ -1,0 +1,21 @@
+PubMed
+
+P1: ((perioperative[Title/Abstract]) AND (hypertension[Title/Abstract] OR hypotension[Title/Abstract] 
+OR "blood pressure"[Title/Abstract]) NOT (pediatric[Title/Abstract] OR paediatric[Title/Abstract] OR pregnancy[Title/Abstract] 
+OR child[Title/Abstract] OR children[Title/Abstract])) AND ("2010/01/01"[PDat] : "2020/12/31"[PDat]) AND English[lang])
+
+
+Articles: 3,060
+
+P2: (hypertension[MeSH Terms]) AND intensive care[MeSH Terms]) OR (period, perioperative[MeSH Terms] 
+AND blood pressure[MeSH Terms] AND hypotension[MeSH Terms]) AND ("2010/01/01"[PDat] : "2020/12/31"[PDat]) AND English[lang])
+
+
+Articles: 52
+
+
+P3: (hypertension[MeSH Terms])OR hypotension[MeSH Terms] OR blood pressure[MeSH Terms]) AND (period, perioperative[MeSH Terms]
+AND ("2010/01/01"[PDat] :"2020/12/31"[PDat]) AND English[lang])
+
+
+Articles: 950
