@@ -8,7 +8,7 @@ source("R/03-upload_telegram.r")
 
 # Settings --------------------------------------------------------------------
 DATA_DIR      <- "data"
-UPLOAD_GLOB   <- "*.html"             # which supplement files to send; "*" = everything
+UPLOAD_GLOB   <- "*"             # which supplement files to send; "*" = everything
 CACHE_FILE    <- "upload_cache.txt"   # one uploaded file path per line (append-only)
 FAILURES_FILE <- "upload_failures.csv"  # failures/skips of the latest run
 SLEEP_SECONDS <- 3.025                # stays under Telegram's 20 messages/min group limit
