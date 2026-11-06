@@ -1,0 +1,111 @@
+name: Download + upload pipeline
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Resume every 6 h (a job can run at most 6 h). Disable the workflow when done.
+    - cron: "17 */6 * * *"
+
+# One run at a time (the two jobs inside a run do run in parallel)
+concurrency:
+  group: dmsr-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      TIME_BUDGET_MIN: "315"   # script stops cleanly and commits before the 330 min step timeout
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Git identity
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::readr
+            any::dplyr
+            any::tibble
+            any::httr2
+            any::jsonlite
+
+      - name: Run R/04-main_download.r
+        timeout-minutes: 330
+        run: Rscript R/04-main_download.r
+
+      # Always pushes, even if the script crashed or hit the timeout: the script may have
+      # committed locally while its own sync failed. Pull first: the upload job pushes too.
+      - name: Commit and push leftovers
+        if: always()
+        run: |
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "download: save progress"
+          fi
+          git pull --rebase
+          for attempt in 1 2 3; do
+            git push && exit 0
+            echo "push failed (attempt $attempt)"; sleep 20
+            git pull --rebase
+          done
+          exit 1
+
+  upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    env:
+      TG_TOKEN: ${{ secrets.TG_TOKEN }}
+      CHAT_ID:  ${{ secrets.CHAT_ID }}
+      TIME_BUDGET_MIN: "315"
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Git identity
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::readr
+            any::dplyr
+            any::tibble
+            any::fs
+            any::httr2
+            any::curl
+
+      - name: Run R/05-main_upload_telegram.r
+        timeout-minutes: 330
+        run: Rscript R/05-main_upload_telegram.r
+
+      - name: Commit and push upload cache
+        if: always()
+        run: |
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "upload: save cache"
+          fi
+          git pull --rebase
+          for attempt in 1 2 3; do
+            git push && exit 0
+            echo "push failed (attempt $attempt)"; sleep 20
+            git pull --rebase
+          done
+          exit 1
