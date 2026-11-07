@@ -1,0 +1,20 @@
+Search Name:	MATE分析
+Date Run:	06/12/2021 19:35:15
+Comment:	
+
+ID	Search	Hits
+#1	MeSH descriptor: [Immunoglobulins, Intravenous] this term only	885
+#2	(Intravenous Immunoglobulins):ti,ab,kw OR (IVIG):ti,ab,kw OR (Antibodies, Intravenous):ti,ab,kw OR (Human Intravenous Immunoglobulin):ti,ab,kw OR (IV Immunoglobulins):ti,ab,kw (Word variations have been searched)	8539
+#3	#1 OR #2	8539
+#4	MeSH descriptor: [Alzheimer Disease] this term only	3652
+#5	(Dementia):ti,ab,kw OR (Alzheimer Disease):ti,ab,kw OR (Senile Dementia):ti,ab,kw OR (Alzheimer Dementias):ti,ab,kw OR (Dementia, Alzheimer-Type (ATD)):ti,ab,kw (Word variations have been searched)	20824
+#6	#4 OR #5	20824
+#7	MeSH descriptor: [Albumins] this term only	691
+#8	MeSH descriptor: [Blood Transfusion] this term only	1989
+#9	(transfusion):ti,ab,kw (Word variations have been searched)	18029
+#10	#8 OR #9	18029
+#11	MeSH descriptor: [Blood Component Removal] this term only	209
+#12	(apheresis):ti,ab,kw OR (Phereses):ti,ab,kw AND (Blood Component Removals):ti,ab,kw (Word variations have been searched)	1212
+#13	#11 OR #12	1274
+#14	#3 OR #7 OR #10 OR #13	27945
+#15	#6 AND #14	173
